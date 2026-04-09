@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Blockcraft Launcher</title>
 <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet">
+<link rel="icon" type="image/png" href="blockcraft_logo.png">
 
 <style>
 *{box-sizing:border-box;}
@@ -15,7 +16,7 @@ body{
   overflow:hidden;
 }
 
-/* ===== PANORAMA BACKGROUND ===== */
+/* PANORAMA BACKGROUND */
 body::before, body::after{
   content:"";
   position:fixed;
@@ -37,22 +38,11 @@ body::after{
   z-index:-3;
 }
 
-@keyframes panorama{
-  from{background-position:0% 50%;}
-  to{background-position:100% 50%;}
-}
+@keyframes panorama{from{background-position:0% 50%;}to{background-position:100% 50%;}}
+@keyframes fade1{0%,45%,100%{opacity:1;}50%,95%{opacity:0;}}
+@keyframes fade2{0%,45%,100%{opacity:0;}50%,95%{opacity:1;}}
 
-@keyframes fade1{
-  0%,45%,100%{opacity:1;}
-  50%,95%{opacity:0;}
-}
-
-@keyframes fade2{
-  0%,45%,100%{opacity:0;}
-  50%,95%{opacity:1;}
-}
-
-/* ===== LOGIN ===== */
+/* LOGIN */
 #loginPanel{
   height:100vh;
   display:flex;
@@ -60,7 +50,6 @@ body::after{
   align-items:center;
   background:rgba(0,0,0,0.6);
 }
-
 .login-box{
   background:rgba(0,0,0,0.8);
   padding:30px;
@@ -69,7 +58,6 @@ body::after{
   text-align:center;
   border-radius:8px;
 }
-
 input, textarea{
   width:100%;
   padding:10px;
@@ -81,7 +69,6 @@ input, textarea{
   background:#111;
   color:white;
 }
-
 .mc-button{
   background:#5DBB63;
   border:3px solid #2E7D32;
@@ -93,12 +80,15 @@ input, textarea{
   border-radius:4px;
 }
 
-/* ===== LAUNCHER ===== */
+/* LAUNCHER */
 #launcher{
   display:none;
   height:100vh;
   display:flex;
   background:rgba(0,0,0,0.5);
+}
+#launcher.high-contrast{
+  filter:contrast(180%);
 }
 
 /* SIDEBAR */
@@ -109,7 +99,6 @@ input, textarea{
   border-right:2px solid #2E7D32;
   text-align:center;
 }
-
 .sidebar img{
   width:70px;
   height:70px;
@@ -117,7 +106,6 @@ input, textarea{
   border-radius:8px;
   margin-bottom:10px;
 }
-
 .tab{
   width:100%;
   padding:10px;
@@ -127,7 +115,6 @@ input, textarea{
   cursor:pointer;
   border-radius:4px;
 }
-
 .tab.active{
   background:#5DBB63;
   color:black;
@@ -141,10 +128,8 @@ input, textarea{
   justify-content:space-between;
   padding:20px;
 }
-
 .panel{display:none;}
 .panel.active{display:block;}
-
 .box{
   background:#1a1a1a;
   padding:15px;
@@ -159,7 +144,6 @@ input, textarea{
   border-top:2px solid #2E7D32;
   padding-top:10px;
 }
-
 .play-btn{
   padding:15px 50px;
   font-size:20px;
@@ -175,7 +159,6 @@ input, textarea{
   position:fixed;
   inset:0;
 }
-
 #game iframe{
   width:100%;
   height:100%;
@@ -207,13 +190,18 @@ input, textarea{
     <button class="tab" data-tab="mods">Mods</button>
     <button class="tab" data-tab="install">Installations</button>
     <button class="tab" data-tab="account">Account</button>
+    <button class="tab" data-tab="settings">Settings</button>
   </div>
 
   <div class="main">
+    <!-- PLAY -->
     <div id="play" class="panel active">
       <h1>Welcome Back</h1>
+      <p>Blockcraft 1.26.2 — Explore survival, creative, and adventure worlds with friends!</p>
+      <p>Check Legacy Paper Minecraft in Installations tab!</p>
     </div>
 
+    <!-- SERVERS -->
     <div id="servers" class="panel">
       <div class="box">
         Survival — play.blockcraft.net<br><br>
@@ -222,6 +210,7 @@ input, textarea{
       </div>
     </div>
 
+    <!-- MODS -->
     <div id="mods" class="panel">
       <div class="box">
         <input type="checkbox"> OptiFine<br>
@@ -230,10 +219,14 @@ input, textarea{
       </div>
     </div>
 
+    <!-- INSTALLATIONS -->
     <div id="install" class="panel">
       <div class="box">
         <a href="BlockcraftInstaller.zip" download>
           <button class="mc-button">Download Installer</button>
+        </a>
+        <a href="legacy_paper.html" target="_blank">
+          <button class="mc-button">Play Legacy Paper Minecraft</button>
         </a>
         <p>
           1. Extract ZIP<br>
@@ -243,6 +236,7 @@ input, textarea{
       </div>
     </div>
 
+    <!-- ACCOUNT -->
     <div id="account" class="panel">
       <div class="box">
         Username: <span id="accUser"></span><br><br>
@@ -251,6 +245,26 @@ input, textarea{
         Bio:
         <textarea id="bioInput"></textarea>
         <button class="mc-button" id="saveProfileBtn">Save</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings" class="panel">
+      <div class="box">
+        <label>Launcher Theme:</label>
+        <select id="themeSelect">
+          <option value="default">Default</option>
+          <option value="dark">Dark</option>
+          <option value="green">Green</option>
+        </select><br><br>
+        <label>High Contrast Mode:</label>
+        <input type="checkbox" id="contrastMode"><br><br>
+        <label>Shader Pack for Game:</label>
+        <select id="shaderSelect">
+          <option value="none">None</option>
+          <option value="high-contrast">High Contrast</option>
+          <option value="retro">Retro</option>
+        </select>
       </div>
     </div>
 
@@ -279,6 +293,11 @@ const accUser = document.getElementById('accUser');
 const bioInput = document.getElementById('bioInput');
 const pfpPreview = document.getElementById('pfpPreview');
 
+// SETTINGS
+const themeSelect = document.getElementById('themeSelect');
+const contrastMode = document.getElementById('contrastMode');
+const shaderSelect = document.getElementById('shaderSelect');
+
 // EVENTS
 document.getElementById('loginBtn').addEventListener('click', loginAction);
 document.getElementById('newBtn').addEventListener('click', newLogin);
@@ -306,24 +325,20 @@ function newLogin(){
 function loginAction(){
   const u = usernameInput.value.trim();
   const p = passwordInput.value.trim();
-
   if(!u || !p) return alert("Fill all fields.");
-
   const savedUser = localStorage.getItem('user');
   const savedPass = localStorage.getItem('pass');
-
   if(!savedUser){
     localStorage.setItem('user', u);
     localStorage.setItem('pass', p);
     alert("Account created! Login now.");
+  } else if(u === savedUser && p === savedPass){
+    loginPanel.style.display = 'none';
+    launcher.style.display = 'flex';
+    loadProfile();
+    loadSettings();
   } else {
-    if(u === savedUser && p === savedPass){
-      loginPanel.style.display = 'none';
-      launcher.style.display = 'flex';
-      loadProfile();
-    } else {
-      alert("Wrong username or password.");
-    }
+    alert("Wrong username or password.");
   }
 }
 
@@ -332,7 +347,6 @@ function loadProfile(){
   const user = localStorage.getItem('user');
   const bio = localStorage.getItem('bio') || '';
   const pfp = localStorage.getItem('pfp') || 'https://mc-heads.net/avatar/Steve';
-
   displayNameEl.innerText = user;
   accUser.innerText = user;
   bioInput.value = bio;
@@ -342,9 +356,7 @@ function loadProfile(){
 function saveProfile(){
   const bio = bioInput.value;
   const file = document.getElementById('pfpUpload').files[0];
-
   localStorage.setItem('bio', bio);
-
   if(file){
     const reader = new FileReader();
     reader.onload = e => {
@@ -355,17 +367,52 @@ function saveProfile(){
   } else {
     loadProfile();
   }
-
   alert("Profile saved!");
+}
+
+// SETTINGS
+function loadSettings(){
+  themeSelect.value = localStorage.getItem('theme') || 'default';
+  contrastMode.checked = localStorage.getItem('contrast')==='true';
+  shaderSelect.value = localStorage.getItem('shader') || 'none';
+  applyTheme();
+}
+
+themeSelect.addEventListener('change', ()=>{
+  localStorage.setItem('theme', themeSelect.value);
+  applyTheme();
+});
+contrastMode.addEventListener('change', ()=>{
+  localStorage.setItem('contrast', contrastMode.checked);
+  applyTheme();
+});
+shaderSelect.addEventListener('change', ()=>{
+  localStorage.setItem('shader', shaderSelect.value);
+});
+
+// APPLY THEME
+function applyTheme(){
+  const theme = themeSelect.value;
+  // Background only
+  launcher.style.backgroundColor = (theme==='dark')?'#0e0e0e':(theme==='green')?'#003300':'rgba(0,0,0,0.5)';
+  // High contrast only for launcher
+  if(contrastMode.checked){
+    launcher.classList.add('high-contrast');
+  } else {
+    launcher.classList.remove('high-contrast');
+  }
 }
 
 // GAME
 function launchGame(){
   launcher.style.display = 'none';
   document.getElementById('game').style.display = 'block';
-  document.getElementById('frame').src = 'https://discerning-block-craft-go.base44.app/';
+  const shader = shaderSelect.value || 'none';
+  let url = 'https://discerning-block-craft-go.base44.app/';
+  if(shader==='high-contrast') url+='?shader=high-contrast';
+  if(shader==='retro') url+='?shader=retro';
+  document.getElementById('frame').src = url;
 }
 </script>
-
 </body>
 </html>
