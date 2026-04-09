@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blockcraft Launcher</title>
+
+<link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Minecraft', monospace;
+  background:#0e0e0e;
+  color:white;
+}
+
+/* ===== LOGIN ===== */
+#loginPanel{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:url("Overworld.png") center/cover no-repeat;
+}
+
+.login-box{
+  background:rgba(0,0,0,0.75);
+  padding:30px;
+  border:4px solid #2E7D32;
+  width:300px;
+  text-align:center;
+}
+
+input, textarea{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  font-family:'Minecraft';
+}
+
+.mc-button{
+  background:#5DBB63;
+  border:3px solid #2E7D32;
+  padding:10px;
+  margin:5px;
+  cursor:pointer;
+  font-family:'Minecraft';
+  color:black;
+}
+
+/* ===== LAUNCHER ===== */
+#launcher{
+  display:none;
+  height:100vh;
+  display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#111;
+  padding:15px;
+  border-right:2px solid #2E7D32;
+  text-align:center;
+}
+
+.sidebar img{
+  width:70px;
+  height:70px;
+  border:2px solid #2E7D32;
+  border-radius:8px;
+}
+
+.tab{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  background:#1c1c1c;
+  border:2px solid #2a2a2a;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:#5DBB63;
+  color:black;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:20px;
+}
+
+.panel{display:none;}
+.panel.active{display:block;}
+
+.box{
+  background:#1a1a1a;
+  padding:15px;
+  border:2px solid #333;
+}
+
+/* PLAY BAR */
+.playbar{
+  display:flex;
+  justify-content:space-between;
+  border-top:2px solid #2E7D32;
+  padding-top:10px;
+}
+
+.play-btn{
+  padding:15px 50px;
+  font-size:20px;
+  background:#5DBB63;
+  border:4px solid #2E7D32;
+  cursor:pointer;
+}
+
+/* GAME */
+#game{
+  display:none;
+  position:fixed;
+  inset:0;
+}
+
+#game iframe{
+  width:100%;
+  height:100%;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginPanel">
+  <div class="login-box">
+    <h1>Blockcraft</h1>
+
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+
+    <button class="mc-button" onclick="mainAction()">Login</button>
+    <button class="mc-button" onclick="newLogin()">New Account</button>
+  </div>
+</div>
+
+<!-- LAUNCHER -->
+<div id="launcher">
+
+<div class="sidebar">
+
+  <img id="pfpPreview">
+  <p id="displayName">Player</p>
+
+  <button class="tab active" onclick="switchTab('play')">Play</button>
+  <button class="tab" onclick="switchTab('servers')">Servers</button>
+  <button class="tab" onclick="switchTab('mods')">Mods</button>
+  <button class="tab" onclick="switchTab('install')">Installations</button>
+  <button class="tab" onclick="switchTab('account')">Account</button>
+
+</div>
+
+<div class="main">
+
+<div>
+
+<!-- PLAY -->
+<div id="play" class="panel active">
+  <h1>Welcome Back</h1>
+</div>
+
+<!-- SERVERS -->
+<div id="servers" class="panel">
+  <div class="box">
+    Survival — play.blockcraft.net<br><br>
+    PvP — pvp.blockcraft.net<br><br>
+    Creative — creative.blockcraft.net
+  </div>
+</div>
+
+<!-- MODS -->
+<div id="mods" class="panel">
+  <div class="box">
+    <input type="checkbox"> OptiFine<br>
+    <input type="checkbox"> More Blocks<br>
+    <input type="checkbox"> Super Tools<br>
+  </div>
+</div>
+
+<!-- INSTALL -->
+<div id="install" class="panel">
+  <div class="box">
+    <a href="BlockcraftInstaller.zip" download>
+      <button class="mc-button">Download Installer</button>
+    </a>
+
+    <p>
+    1. Extract ZIP<br>
+    2. Run inside folder<br>
+    3. Don't move files 💀
+    </p>
+  </div>
+</div>
+
+<!-- ACCOUNT -->
+<div id="account" class="panel">
+  <div class="box">
+
+    Username: <span id="accUser"></span><br><br>
+
+    Upload PFP:
+    <input type="file" id="pfpUpload"><br>
+
+    Bio:
+    <textarea id="bioInput"></textarea>
+
+    <button class="mc-button" onclick="saveProfile()">Save</button>
+
+  </div>
+</div>
+
+</div>
+
+<div class="playbar">
+  <div>Version 1.26.2</div>
+  <button class="play-btn" onclick="launchGame()">PLAY</button>
+</div>
+
+</div>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <iframe id="frame"></iframe>
+</div>
+
+<script>
+function newLogin(){
+  localStorage.clear();
+}
+
+function mainAction(){
+  const u=username.value.trim();
+  const p=password.value.trim();
+
+  if(!u||!p) return alert("Fill all");
+
+  if(!localStorage.getItem("user")){
+    localStorage.setItem("user",u);
+    localStorage.setItem("pass",p);
+    alert("Account created");
+  }else{
+    if(u===localStorage.getItem("user") && p===localStorage.getItem("pass")){
+      loginPanel.style.display="none";
+      launcher.style.display="flex";
+      loadProfile();
+    }else{
+      alert("Wrong login");
+    }
+  }
+}
+
+function switchTab(id){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  event.target.classList.add("active");
+}
+
+/* PROFILE */
+function loadProfile(){
+  const user=localStorage.getItem("user");
+  const bio=localStorage.getItem("bio")||"";
+  const pfp=localStorage.getItem("pfp");
+
+  displayName.innerText=user;
+  accUser.innerText=user;
+  bioInput.value=bio;
+
+  pfpPreview.src = pfp || "https://mc-heads.net/avatar/Steve";
+}
+
+function saveProfile(){
+  const bio=bioInput.value;
+  const file=pfpUpload.files[0];
+
+  localStorage.setItem("bio",bio);
+
+  if(file){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      localStorage.setItem("pfp",e.target.result);
+      loadProfile();
+    };
+    reader.readAsDataURL(file);
+  }else{
+    loadProfile();
+  }
+
+  alert("Saved");
+}
+
+/* GAME */
+function launchGame(){
+  launcher.style.display="none";
+  game.style.display="block";
+  frame.src="https://discerning-block-craft-go.base44.app/";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blockcraft Launcher</title>
+
+<!-- CDN Minecraft font -->
+<link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet">
+
+<link rel="icon" href="logo.png">
+
+<style>
+/* ===== RESET ===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Minecraft', monospace;
+  color: white;
+  text-align: center;
+  font-display: swap; /* ensures fallback shows until font loads */
+}
+
+/* Apply font to inputs and buttons too */
+input, button {
+  font-family: 'Minecraft', monospace;
+  font-display: swap;
+}
+
+/* ===== FULLSCREEN BACKGROUND ===== */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  z-index: -2;
+}
+
+body::before {
+  background-image: url("Overworld.png");
+  animation: fade 20s linear infinite;
+  opacity: 1;
+  z-index: -2;
+}
+
+body::after {
+  background-image: url("Nether.png");
+  animation: fade 20s linear infinite reverse;
+  z-index: -3;
+}
+
+@keyframes fade {
+  0%, 45%, 100% { opacity: 1; }
+  50%, 95% { opacity: 0; }
+}
+
+/* ===== OVERLAY & UI ===== */
+.overlay {
+  background: rgba(0,0,0,0.6);
+  min-height: 100vh;
+  padding: 30px;
+}
+
+h1 { font-size: 48px; margin-bottom: 10px; }
+h2 { font-size: 18px; margin-top: 0; }
+
+.menu {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.mc-button {
+  background: #5DBB63;
+  border: 4px solid #2E7D32;
+  color: black;
+  padding: 14px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px #1B5E20;
+}
+
+.mc-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px #1B5E20;
+}
+
+.panel {
+  margin: 20px auto;
+  padding: 20px;
+  width: 340px;
+  border: 6px solid #2E7D32;
+  background: rgba(0,0,0,0.7);
+}
+
+input {
+  width: 90%;
+  padding: 10px;
+  margin: 6px 0;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* ===== LOADING BAR ===== */
+.loading-box {
+  width: 300px;
+  height: 20px;
+  border: 4px solid #2E7D32;
+  margin: 15px auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-box::after {
+  content: "";
+  position: absolute;
+  width: 40%;
+  height: 100%;
+  background: #5DBB63;
+  animation: load 2s linear infinite;
+}
+
+@keyframes load {
+  from { left: -40%; }
+  to { left: 100%; }
+}
+
+/* ===== GAME & PAPER ===== */
+#gameContainer {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 999;
+}
+
+#gameContainer iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+#paperContainer {
+  display: none;
+  margin-top: 20px;
+}
+
+#paperContainer iframe {
+  width: 90%;
+  height: 500px;
+  border: 6px solid #2E7D32;
+}
+</style>
+</head>
+
+<body>
+<div class="overlay" id="launcher">
+  <h1>Blockcraft</h1>
+  <h2>Official Web Launcher</h2>
+
+  <div id="loginPanel" class="panel">
+    <input id="username" placeholder="Player Name">
+    <input id="password" type="password" placeholder="Password">
+
+    <div class="menu">
+      <button id="mainBtn" class="mc-button" onclick="mainAction()">Login</button>
+      <button id="newBtn" class="mc-button" onclick="newLogin()">New Login</button>
+    </div>
+  </div>
+
+  <div id="loading" style="display:none;">
+    <h2>Loading...</h2>
+    <div class="loading-box"></div>
+  </div>
+
+  <div id="mainMenu" class="menu" style="display:none;">
+    <button class="mc-button" onclick="launchBlockcraft()">
+      Launch Blockcraft 1.26.2 (Beta)
+    </button>
+
+    <div id="extraMenu" class="menu" style="display:none;">
+      <button class="mc-button">Leaderboard (Not ready Yet)</button>
+      <button class="mc-button">Settings</button>
+      <button class="mc-button">Shop (Not ready Yet)</button>
+    </div>
+
+    <div id="paperContainer">
+      <h2>Paper Minecraft (Example Idea)</h2>
+      <iframe src="https://scratch.mit.edu/projects/10128407/embed"></iframe>
+    </div>
+  </div>
+</div>
+
+<div id="gameContainer">
+  <iframe id="gameFrame"></iframe>
+</div>
+
+<script>
+const loginPanel = document.getElementById("loginPanel");
+const loading = document.getElementById("loading");
+const mainMenu = document.getElementById("mainMenu");
+const extraMenu = document.getElementById("extraMenu");
+const launcher = document.getElementById("launcher");
+const gameContainer = document.getElementById("gameContainer");
+const gameFrame = document.getElementById("gameFrame");
+const paperContainer = document.getElementById("paperContainer");
+const mainBtn = document.getElementById("mainBtn");
+const newBtn = document.getElementById("newBtn");
+const username = document.getElementById("username");
+const password = document.getElementById("password");
+
+let mode = "login";
+
+function init() {
+  if(!localStorage.getItem("mc_user")) {
+    mode = "add";
+    mainBtn.innerText = "Add Account";
+    newBtn.style.display = "none";
+  }
+}
+init();
+
+function newLogin() {
+  localStorage.clear();
+  username.value = "";
+  password.value = "";
+  mode = "add";
+  mainBtn.innerText = "Add Account";
+}
+
+function mainAction() {
+  const user = username.value.trim();
+  const pass = password.value.trim();
+  if(!user || !pass) return alert("Fill everything.");
+
+  if(mode === "add") {
+    localStorage.setItem("mc_user", user);
+    localStorage.setItem("mc_pass", pass);
+    alert("Account added. Login now.");
+    mode = "login";
+    mainBtn.innerText = "Login";
+    newBtn.style.display = "inline-block";
+  } else {
+    if(user === localStorage.getItem("mc_user") &&
+       pass === localStorage.getItem("mc_pass")) {
+      loginPanel.style.display = "none";
+      loading.style.display = "block";
+      setTimeout(()=>{
+        loading.style.display = "none";
+        mainMenu.style.display = "flex";
+        extraMenu.style.display = "flex";
+      },2000);
+    } else {
+      alert("Wrong username or password.");
+    }
+  }
+}
+
+function launchBlockcraft() {
+  loading.style.display = "block";
+  setTimeout(()=>{
+    launcher.style.display = "none";
+    gameContainer.style.display = "block";
+    gameFrame.src = "https://discerning-block-craft-go.base44.app";
+  },2000);
+}
+
+function openPaper() {
+  paperContainer.style.display = "block";
+}
+</script>
+</body>
+</html>
