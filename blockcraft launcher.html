@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Blockcraft Launcher</title>
-
 <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet">
 
 <style>
@@ -12,8 +11,45 @@
 body{
   margin:0;
   font-family:'Minecraft', monospace;
-  background:#0e0e0e;
   color:white;
+  overflow:hidden;
+}
+
+/* ===== PANORAMA BACKGROUND ===== */
+body::before, body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+
+body::before{
+  background-image:url('Overworld.png');
+  animation:panorama 60s linear infinite, fade1 20s linear infinite;
+}
+
+body::after{
+  background-image:url('Nether.png');
+  animation:panorama 60s linear infinite, fade2 20s linear infinite;
+  z-index:-3;
+}
+
+@keyframes panorama{
+  from{background-position:0% 50%;}
+  to{background-position:100% 50%;}
+}
+
+@keyframes fade1{
+  0%,45%,100%{opacity:1;}
+  50%,95%{opacity:0;}
+}
+
+@keyframes fade2{
+  0%,45%,100%{opacity:0;}
+  50%,95%{opacity:1;}
 }
 
 /* ===== LOGIN ===== */
@@ -22,15 +58,16 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:url("Overworld.png") center/cover no-repeat;
+  background:rgba(0,0,0,0.6);
 }
 
 .login-box{
-  background:rgba(0,0,0,0.75);
+  background:rgba(0,0,0,0.8);
   padding:30px;
   border:4px solid #2E7D32;
-  width:300px;
+  width:320px;
   text-align:center;
+  border-radius:8px;
 }
 
 input, textarea{
@@ -38,6 +75,11 @@ input, textarea{
   padding:10px;
   margin:8px 0;
   font-family:'Minecraft';
+  font-size:16px;
+  border:2px solid #333;
+  border-radius:4px;
+  background:#111;
+  color:white;
 }
 
 .mc-button{
@@ -48,6 +90,7 @@ input, textarea{
   cursor:pointer;
   font-family:'Minecraft';
   color:black;
+  border-radius:4px;
 }
 
 /* ===== LAUNCHER ===== */
@@ -55,6 +98,7 @@ input, textarea{
   display:none;
   height:100vh;
   display:flex;
+  background:rgba(0,0,0,0.5);
 }
 
 /* SIDEBAR */
@@ -71,6 +115,7 @@ input, textarea{
   height:70px;
   border:2px solid #2E7D32;
   border-radius:8px;
+  margin-bottom:10px;
 }
 
 .tab{
@@ -80,6 +125,7 @@ input, textarea{
   background:#1c1c1c;
   border:2px solid #2a2a2a;
   cursor:pointer;
+  border-radius:4px;
 }
 
 .tab.active{
@@ -87,7 +133,7 @@ input, textarea{
   color:black;
 }
 
-/* MAIN */
+/* MAIN PANEL */
 .main{
   flex:1;
   display:flex;
@@ -103,9 +149,10 @@ input, textarea{
   background:#1a1a1a;
   padding:15px;
   border:2px solid #333;
+  border-radius:6px;
 }
 
-/* PLAY BAR */
+/* PLAYBAR */
 .playbar{
   display:flex;
   justify-content:space-between;
@@ -119,6 +166,7 @@ input, textarea{
   background:#5DBB63;
   border:4px solid #2E7D32;
   cursor:pointer;
+  border-radius:6px;
 }
 
 /* GAME */
@@ -142,98 +190,75 @@ input, textarea{
 <div id="loginPanel">
   <div class="login-box">
     <h1>Blockcraft</h1>
-
     <input id="username" placeholder="Username">
     <input id="password" type="password" placeholder="Password">
-
-    <button class="mc-button" onclick="mainAction()">Login</button>
-    <button class="mc-button" onclick="newLogin()">New Account</button>
+    <button class="mc-button" id="loginBtn">Login</button>
+    <button class="mc-button" id="newBtn">New Account</button>
   </div>
 </div>
 
 <!-- LAUNCHER -->
 <div id="launcher">
-
-<div class="sidebar">
-
-  <img id="pfpPreview">
-  <p id="displayName">Player</p>
-
-  <button class="tab active" onclick="switchTab('play')">Play</button>
-  <button class="tab" onclick="switchTab('servers')">Servers</button>
-  <button class="tab" onclick="switchTab('mods')">Mods</button>
-  <button class="tab" onclick="switchTab('install')">Installations</button>
-  <button class="tab" onclick="switchTab('account')">Account</button>
-
-</div>
-
-<div class="main">
-
-<div>
-
-<!-- PLAY -->
-<div id="play" class="panel active">
-  <h1>Welcome Back</h1>
-</div>
-
-<!-- SERVERS -->
-<div id="servers" class="panel">
-  <div class="box">
-    Survival — play.blockcraft.net<br><br>
-    PvP — pvp.blockcraft.net<br><br>
-    Creative — creative.blockcraft.net
+  <div class="sidebar">
+    <img id="pfpPreview" src="https://mc-heads.net/avatar/Steve">
+    <p id="displayName">Player</p>
+    <button class="tab active" data-tab="play">Play</button>
+    <button class="tab" data-tab="servers">Servers</button>
+    <button class="tab" data-tab="mods">Mods</button>
+    <button class="tab" data-tab="install">Installations</button>
+    <button class="tab" data-tab="account">Account</button>
   </div>
-</div>
 
-<!-- MODS -->
-<div id="mods" class="panel">
-  <div class="box">
-    <input type="checkbox"> OptiFine<br>
-    <input type="checkbox"> More Blocks<br>
-    <input type="checkbox"> Super Tools<br>
+  <div class="main">
+    <div id="play" class="panel active">
+      <h1>Welcome Back</h1>
+    </div>
+
+    <div id="servers" class="panel">
+      <div class="box">
+        Survival — play.blockcraft.net<br><br>
+        PvP — pvp.blockcraft.net<br><br>
+        Creative — creative.blockcraft.net
+      </div>
+    </div>
+
+    <div id="mods" class="panel">
+      <div class="box">
+        <input type="checkbox"> OptiFine<br>
+        <input type="checkbox"> More Blocks<br>
+        <input type="checkbox"> Super Tools<br>
+      </div>
+    </div>
+
+    <div id="install" class="panel">
+      <div class="box">
+        <a href="BlockcraftInstaller.zip" download>
+          <button class="mc-button">Download Installer</button>
+        </a>
+        <p>
+          1. Extract ZIP<br>
+          2. Run inside folder<br>
+          3. Don't move files 💀
+        </p>
+      </div>
+    </div>
+
+    <div id="account" class="panel">
+      <div class="box">
+        Username: <span id="accUser"></span><br><br>
+        Profile Picture:
+        <input type="file" id="pfpUpload"><br>
+        Bio:
+        <textarea id="bioInput"></textarea>
+        <button class="mc-button" id="saveProfileBtn">Save</button>
+      </div>
+    </div>
+
+    <div class="playbar">
+      <div>Version 1.26.2</div>
+      <button class="play-btn" id="playBtn">PLAY</button>
+    </div>
   </div>
-</div>
-
-<!-- INSTALL -->
-<div id="install" class="panel">
-  <div class="box">
-    <a href="BlockcraftInstaller.zip" download>
-      <button class="mc-button">Download Installer</button>
-    </a>
-
-    <p>
-    1. Extract ZIP<br>
-    2. Run inside folder<br>
-    3. Don't move files 💀
-    </p>
-  </div>
-</div>
-
-<!-- ACCOUNT -->
-<div id="account" class="panel">
-  <div class="box">
-
-    Username: <span id="accUser"></span><br><br>
-
-    Upload PFP:
-    <input type="file" id="pfpUpload"><br>
-
-    Bio:
-    <textarea id="bioInput"></textarea>
-
-    <button class="mc-button" onclick="saveProfile()">Save</button>
-
-  </div>
-</div>
-
-</div>
-
-<div class="playbar">
-  <div>Version 1.26.2</div>
-  <button class="play-btn" onclick="launchGame()">PLAY</button>
-</div>
-
-</div>
 </div>
 
 <!-- GAME -->
@@ -242,77 +267,103 @@ input, textarea{
 </div>
 
 <script>
+// ELEMENTS
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const loginPanel = document.getElementById('loginPanel');
+const launcher = document.getElementById('launcher');
+const tabs = document.querySelectorAll('.tab');
+const panels = document.querySelectorAll('.panel');
+const displayNameEl = document.getElementById('displayName');
+const accUser = document.getElementById('accUser');
+const bioInput = document.getElementById('bioInput');
+const pfpPreview = document.getElementById('pfpPreview');
+
+// EVENTS
+document.getElementById('loginBtn').addEventListener('click', loginAction);
+document.getElementById('newBtn').addEventListener('click', newLogin);
+document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+document.getElementById('playBtn').addEventListener('click', launchGame);
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const id = tab.dataset.tab;
+    panels.forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+
+// LOGIN
 function newLogin(){
   localStorage.clear();
+  usernameInput.value = '';
+  passwordInput.value = '';
+  alert("Local storage cleared. Create a new account.");
 }
 
-function mainAction(){
-  const u=username.value.trim();
-  const p=password.value.trim();
+function loginAction(){
+  const u = usernameInput.value.trim();
+  const p = passwordInput.value.trim();
 
-  if(!u||!p) return alert("Fill all");
+  if(!u || !p) return alert("Fill all fields.");
 
-  if(!localStorage.getItem("user")){
-    localStorage.setItem("user",u);
-    localStorage.setItem("pass",p);
-    alert("Account created");
-  }else{
-    if(u===localStorage.getItem("user") && p===localStorage.getItem("pass")){
-      loginPanel.style.display="none";
-      launcher.style.display="flex";
+  const savedUser = localStorage.getItem('user');
+  const savedPass = localStorage.getItem('pass');
+
+  if(!savedUser){
+    localStorage.setItem('user', u);
+    localStorage.setItem('pass', p);
+    alert("Account created! Login now.");
+  } else {
+    if(u === savedUser && p === savedPass){
+      loginPanel.style.display = 'none';
+      launcher.style.display = 'flex';
       loadProfile();
-    }else{
-      alert("Wrong login");
+    } else {
+      alert("Wrong username or password.");
     }
   }
 }
 
-function switchTab(id){
-  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  event.target.classList.add("active");
-}
-
-/* PROFILE */
+// PROFILE
 function loadProfile(){
-  const user=localStorage.getItem("user");
-  const bio=localStorage.getItem("bio")||"";
-  const pfp=localStorage.getItem("pfp");
+  const user = localStorage.getItem('user');
+  const bio = localStorage.getItem('bio') || '';
+  const pfp = localStorage.getItem('pfp') || 'https://mc-heads.net/avatar/Steve';
 
-  displayName.innerText=user;
-  accUser.innerText=user;
-  bioInput.value=bio;
-
-  pfpPreview.src = pfp || "https://mc-heads.net/avatar/Steve";
+  displayNameEl.innerText = user;
+  accUser.innerText = user;
+  bioInput.value = bio;
+  pfpPreview.src = pfp;
 }
 
 function saveProfile(){
-  const bio=bioInput.value;
-  const file=pfpUpload.files[0];
+  const bio = bioInput.value;
+  const file = document.getElementById('pfpUpload').files[0];
 
-  localStorage.setItem("bio",bio);
+  localStorage.setItem('bio', bio);
 
   if(file){
-    const reader=new FileReader();
-    reader.onload=e=>{
-      localStorage.setItem("pfp",e.target.result);
+    const reader = new FileReader();
+    reader.onload = e => {
+      localStorage.setItem('pfp', e.target.result);
       loadProfile();
     };
     reader.readAsDataURL(file);
-  }else{
+  } else {
     loadProfile();
   }
 
-  alert("Saved");
+  alert("Profile saved!");
 }
 
-/* GAME */
+// GAME
 function launchGame(){
-  launcher.style.display="none";
-  game.style.display="block";
-  frame.src="https://discerning-block-craft-go.base44.app/";
+  launcher.style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+  document.getElementById('frame').src = 'https://discerning-block-craft-go.base44.app/';
 }
 </script>
 
